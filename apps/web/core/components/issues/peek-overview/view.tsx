@@ -34,7 +34,9 @@ interface IIssueView {
   embedRemoveCurrentNotification?: () => void;
   issueOperations: TIssueOperations;
 }
-
+/**
+ * Issue View for modal and side peek modes
+ */
 export const IssueView: FC<IIssueView> = observer((props) => {
   const {
     workspaceSlug,
@@ -182,7 +184,6 @@ export const IssueView: FC<IIssueView> = observer((props) => {
                       isSubmitting={isSubmitting}
                       setIsSubmitting={(value) => setIsSubmitting(value)}
                     />
-
                     <div className="py-2">
                       <IssueDetailWidgets
                         workspaceSlug={workspaceSlug}

@@ -56,9 +56,11 @@ export const IssueAttachmentsListItem: FC<TIssueAttachmentsListItem> = observer(
           window.open(fileURL, "_blank");
         }}
       >
-        <div className="group flex items-center justify-between gap-3 h-11 hover:bg-custom-background-90 pl-9 pr-2">
+        <div className="group flex items-center justify-between gap-3 h-32 hover:bg-custom-background-90 px-2 my-2">
           <div className="flex items-center gap-3 text-sm truncate">
-            <div className="flex items-center gap-3">{fileIcon}</div>
+            <div className="flex items-center gap-3">
+              <img src={fileURL} alt={fileName} className="h-32" />
+            </div>
             <Tooltip tooltipContent={`${fileName}.${fileExtension}`} isMobile={isMobile}>
               <p className="text-custom-text-200 font-medium truncate">{`${fileName}.${fileExtension}`}</p>
             </Tooltip>

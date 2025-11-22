@@ -161,8 +161,16 @@ export class IssueAttachmentStore implements IIssueAttachmentStore {
         runInAction(() => {
           update(this.attachments, [issueId], (attachmentIds = []) => uniq(concat(attachmentIds, [response.id])));
           set(this.attachmentMap, response.id, response);
+
+          // Get current issue to update its issue_attachments array
+          const currentIssue = this.rootIssueStore.issues.getIssueById(issueId);
+          const currentAttachments = currentIssue?.issue_attachments || [];
+          const newAttachments = [...currentAttachments, response];
+          newAttachments.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+
           this.rootIssueStore.issues.updateIssue(issueId, {
             attachment_count: this.getAttachmentsCountByIssueId(issueId),
+            issue_attachments: newAttachments,
           });
         });
       }
@@ -192,8 +200,16 @@ export class IssueAttachmentStore implements IIssueAttachmentStore {
         return attachmentIds;
       });
       delete this.attachmentMap[attachmentId];
+
+      // Get current issue to update its issue_attachments array
+      const currentIssue = this.rootIssueStore.issues.getIssueById(issueId);
+      const currentAttachments = currentIssue?.issue_attachments || [];
+      const newAttachments = currentAttachments.filter((attachment) => attachment.id !== attachmentId);
+      newAttachments.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+
       this.rootIssueStore.issues.updateIssue(issueId, {
         attachment_count: this.getAttachmentsCountByIssueId(issueId),
+        issue_attachments: newAttachments,
       });
     });
 

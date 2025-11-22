@@ -251,17 +251,14 @@ export const BaseKanBanRoot: React.FC<IBaseKanBanLayout> = observer((props: IBas
       />
       {/* drag and delete component */}
       <div
-        className={`fixed left-1/2 -translate-x-1/2 ${
-          isDragging ? "z-40" : ""
-        } top-3 mx-3 flex w-72 items-center justify-center`}
+        className={`fixed left-1/2 -translate-x-1/2 ${isDragging ? "z-40" : ""
+          } top-3 mx-3 flex w-72 items-center justify-center`}
         ref={deleteAreaRef}
       >
         <div
-          className={`${
-            isDragging ? `opacity-100` : `opacity-0`
-          } flex w-full items-center justify-center rounded border-2 border-red-500/20 bg-custom-background-100 px-3 py-5 text-xs font-medium italic text-red-500 ${
-            isDragOverDelete ? "bg-red-500 opacity-70 blur-2xl" : ""
-          } transition duration-300`}
+          className={`${isDragging ? `opacity-100` : `opacity-0`
+            } flex w-full items-center justify-center rounded border-2 border-red-500/20 bg-custom-background-100 px-3 py-5 text-xs font-medium italic text-red-500 ${isDragOverDelete ? "bg-red-500 opacity-70 blur-2xl" : ""
+            } transition duration-300`}
         >
           Drop here to delete the work item.
         </div>

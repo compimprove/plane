@@ -16,7 +16,7 @@ import type { TIssue, IIssueDisplayProperties, IIssueMap } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 // ui
 import { ControlLink, DropIndicator } from "@plane/ui";
-import { cn, generateWorkItemLink } from "@plane/utils";
+import { cn, generateWorkItemLink, getFileURL } from "@plane/utils";
 // components
 import RenderIfVisible from "@/components/core/render-if-visible-HOC";
 import { HIGHLIGHT_CLASS, getIssueBlockId } from "@/components/issues/issue-layouts/utils";
@@ -74,9 +74,8 @@ const KanbanIssueDetailsBlock: React.FC<IssueDetailsBlockProps> = observer((prop
   const customActionButton = (
     <div
       ref={menuActionRef}
-      className={`flex items-center h-full w-full cursor-pointer rounded p-1 text-custom-sidebar-text-400 hover:bg-custom-background-80 ${
-        isMenuActive ? "bg-custom-background-80 text-custom-text-100" : "text-custom-text-200"
-      }`}
+      className={`flex items-center h-full w-full cursor-pointer rounded p-1 text-custom-sidebar-text-400 hover:bg-custom-background-80 ${isMenuActive ? "bg-custom-background-80 text-custom-text-100" : "text-custom-text-200"
+        }`}
       onClick={() => setIsMenuActive(!isMenuActive)}
     >
       <MoreHorizontal className="h-3.5 w-3.5" />
@@ -174,6 +173,9 @@ export const KanbanIssueBlock: React.FC<IssueBlockProps> = observer((props) => {
   const { getIsIssuePeeked } = useIssueDetail(isEpic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES);
   const { handleRedirection } = useIssuePeekOverviewRedirection(isEpic);
   const { isMobile } = usePlatformOS();
+  const {
+    issue: { getIssueById },
+  } = useIssueDetail();
 
   // handlers
   const handleIssuePeekOverview = (issue: TIssue) => handleRedirection(workspaceSlug, issue, isMobile);
@@ -184,6 +186,7 @@ export const KanbanIssueBlock: React.FC<IssueBlockProps> = observer((props) => {
 
   const [isDraggingOverBlock, setIsDraggingOverBlock] = useState(false);
   const [isCurrentBlockDragging, setIsCurrentBlockDragging] = useState(false);
+  const [imageHeight, setImageHeight] = useState<string>("200px");
 
   const canEditIssueProperties = canEditProperties(issue?.project_id ?? undefined);
 
@@ -200,9 +203,19 @@ export const KanbanIssueBlock: React.FC<IssueBlockProps> = observer((props) => {
     isArchived: !!issue?.archived_at,
   });
 
+  // const backgroundImage = "https://plus.unsplash.com/premium_photo-1671656349322-41de944d259b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cG9ydHJhaXR8ZW58MHx8MHx8fDA%3D";
+  const firstAttachment = issue?.issue_attachments?.[0];
+  const backgroundImage = getFileURL(firstAttachment?.asset_url ?? "") ?? undefined;
+
   useOutsideClickDetector(cardRef, () => {
     cardRef?.current?.classList?.remove(HIGHLIGHT_CLASS);
   });
+
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    const isPortrait = img.naturalHeight > img.naturalWidth;
+    setImageHeight(isPortrait ? "250px" : "200px");
+  };
 
   // Make Issue block both as as Draggable and,
   // as a DropTarget for other issues being dragged to get the location of drop
@@ -270,16 +283,26 @@ export const KanbanIssueBlock: React.FC<IssueBlockProps> = observer((props) => {
           href={workItemLink}
           ref={cardRef}
           className={cn(
-            "block rounded border-[1px] outline-[0.5px] outline-transparent w-full border-custom-border-200 bg-custom-background-100 text-sm transition-all hover:border-custom-border-400",
+            "block rounded border-[1px] outline-[0.5px] outline-transparent w-full border-custom-border-400 bg-custom-background-100 text-sm transition-all hover:border-white",
             { "hover:cursor-pointer": isDragAllowed },
-            { "border border-custom-primary-70 hover:border-custom-primary-70": getIsIssuePeeked(issue.id) },
+            { "border-white": getIsIssuePeeked(issue.id) },
             { "bg-custom-background-80 z-[100]": isCurrentBlockDragging }
           )}
           onClick={() => handleIssuePeekOverview(issue)}
           disabled={!!issue?.tempId}
         >
+          {backgroundImage && (
+            <img
+              src={backgroundImage}
+              alt=""
+              onLoad={handleImageLoad}
+              draggable={false}
+              className="w-full object-contain rounded-t pointer-events-none"
+              style={{ height: imageHeight }}
+            />
+          )}
           <RenderIfVisible
-            classNames="space-y-2 px-3 py-2"
+            classNames="relative space-y-2 px-3 py-2"
             root={scrollableContainerRef}
             defaultHeight="100px"
             horizontalOffset={100}
