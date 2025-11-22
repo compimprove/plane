@@ -1,3 +1,6 @@
+# Python imports
+from typing import Any, Dict, List, Optional
+
 # Django imports
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
@@ -134,7 +137,34 @@ def issue_on_results(
         original_list.append(sub_group_by)
 
     required_fields.extend(original_list)
-    return list(issues.values(*required_fields))
+    
+    # Convert queryset to list of dicts with values
+    results = list(issues.values(*required_fields))
+    
+    # Add attachments for each issue
+    from plane.db.models import FileAsset
+    for result in results:
+        # Get attachment objects (not just values) to access asset_url property
+        attachments = FileAsset.objects.filter(
+            issue_id=result["id"],
+            entity_type=FileAsset.EntityTypeContext.ISSUE_ATTACHMENT,
+            is_uploaded=True,
+        )
+        # Convert to list of dicts with asset_url property
+        result["issue_attachments"] = [
+            {
+                "id": str(attachment.id),
+                "attributes": attachment.attributes,
+                "asset": attachment.asset.name if attachment.asset else None,
+                "asset_url": attachment.asset_url,  # This is a property, not a field
+                "created_at": attachment.created_at,
+                "updated_at": attachment.updated_at,
+                "created_by": attachment.created_by_id,
+            }
+            for attachment in attachments
+        ]
+    
+    return results
 
 
 def issue_group_values(

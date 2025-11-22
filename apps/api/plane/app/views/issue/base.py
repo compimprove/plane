@@ -247,6 +247,7 @@ class IssueViewSet(BaseViewSet):
     @method_decorator(gzip_page)
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST])
     def list(self, request, slug, project_id):
+        
         extra_filters = {}
         if request.GET.get("updated_at__gt", None) is not None:
             extra_filters = {"updated_at__gt": request.GET.get("updated_at__gt")}
@@ -270,6 +271,17 @@ class IssueViewSet(BaseViewSet):
 
         # Applying annotations to the issue queryset
         issue_queryset = self.apply_annotations(issue_queryset)
+
+        # Add prefetch for attachments
+        issue_queryset = issue_queryset.prefetch_related(
+            Prefetch(
+                "issue_attachment",
+                queryset=FileAsset.objects.filter(
+                    entity_type=FileAsset.EntityTypeContext.ISSUE_ATTACHMENT,
+                    is_uploaded=True,
+                ),
+            )
+        )
 
         # Issue queryset
         issue_queryset, order_by_param = order_issue_queryset(
@@ -1038,6 +1050,16 @@ class IssueDetailEndpoint(BaseAPIView):
                     Prefetch(
                         "issue_related",
                         queryset=IssueRelation.objects.select_related("issue"),
+                    )
+                )
+            if "issue_attachments" in self.expand:
+                issue = issue.prefetch_related(
+                    Prefetch(
+                        "issue_attachment",
+                        queryset=FileAsset.objects.filter(
+                            entity_type=FileAsset.EntityTypeContext.ISSUE_ATTACHMENT,
+                            is_uploaded=True,
+                        ),
                     )
                 )
 

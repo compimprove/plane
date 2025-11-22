@@ -883,6 +883,22 @@ class IssueListDetailSerializer(serializers.Serializer):
                     )
                 data["issue_related"] = related
 
+            if "issue_attachments" in self.expand:
+                attachments = []
+                for attachment in instance.issue_attachment.all():
+                    attachments.append(
+                        {
+                            "id": str(attachment.id),
+                            "attributes": attachment.attributes,
+                            "asset": attachment.asset.name if attachment.asset else None,
+                            "asset_url": attachment.asset_url,
+                            "created_at": attachment.created_at,
+                            "updated_at": attachment.updated_at,
+                            "created_by": attachment.created_by_id,
+                        }
+                    )
+                data["issue_attachments"] = attachments
+
         return data
 
 
