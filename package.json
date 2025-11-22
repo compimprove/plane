@@ -7,7 +7,11 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --concurrency=18",
+    "dev": "turbo run dev --concurrency=16",
+    "start:admin": "turbo run start --filter=admin",
+    "start:space": "turbo run start --filter=space",
+    "start:web": "turbo run start --filter=web",
+    "dev:web": "turbo run dev --filter=web",
     "start": "turbo run start",
     "clean": "turbo run clean && rm -rf .turbo && rm -rf .next && rm -rf node_modules && rm -rf dist",
     "fix": "turbo run fix",
